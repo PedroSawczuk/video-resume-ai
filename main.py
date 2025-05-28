@@ -1,17 +1,47 @@
-from google import genai
 import os
-from dotenv import load_dotenv
+import re
+import yt_dlp
 
-load_dotenv()
+def formattedYoutubeTitle(title):
+    title = re.sub(r'[^\w\s-]', '', title).strip().lower()
+    title = re.sub(r'[-\s]+', '-', title)
+    return title
 
-apiKeyGemini = os.getenv("GEMINI_API_KEY")
+def getDownloadFolder():
+    return os.path.join(os.getcwd(), "media-download")
 
-client = genai.Client(api_key=apiKeyGemini)
+def fetchYoutubeAudio(url):
+    try:
+        folderPath = getDownloadFolder()
+        os.makedirs(folderPath, exist_ok=True)
 
-response = client.models.generate_content(
-    model="gemini-2.0-flash",
-    contents=f"Bom dia!"
-)
+        with yt_dlp.YoutubeDL({'quiet': True}) as ydl:
+            info = ydl.extract_info(url, download=False)
 
-if response.text is not None:
-    print(response.text)
+        title = formattedYoutubeTitle(info.get('title', 'video'))
+        outputPath = os.path.join(folderPath, f"{title}.%(ext)s")
+
+        ydlOptions = {
+            'format': 'bestaudio/best',
+            'outtmpl': outputPath,
+            'quiet': False,
+            'noplaylist': True,
+            'no_warnings': True,
+            'progress_with_newline': True,
+            'postprocessors': [{
+                'key': 'FFmpegExtractAudio',
+                'preferredcodec': 'm4a',
+                'preferredquality': '192',
+            }]
+        }
+
+        with yt_dlp.YoutubeDL(ydlOptions) as ydl:
+            ydl.download([url])
+
+        print(f"Sucesso! {outputPath.replace('%(ext)s', 'm4a')}")
+
+    except Exception as e:
+        print(f"Erro! {e}")
+
+url = input("Adicione a URL do vídeo: ").strip().lower()
+fetchYoutubeAudio(url)

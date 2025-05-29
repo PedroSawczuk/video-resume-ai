@@ -9,6 +9,8 @@ load_dotenv()
 apiKey = os.getenv("GEMINI_API_KEY")
 client = genai.Client(api_key=apiKey)
 
+ytTitleArray = []
+
 def formattedYoutubeTitle(title):
     title = re.sub(r'[^\w\s-]', '', title).strip().lower()
     title = re.sub(r'[-\s]+', '-', title)
@@ -33,8 +35,10 @@ def fetchYoutubeAudio(url):
         with yt_dlp.YoutubeDL({'quiet': True}) as ydl:
             info = ydl.extract_info(url, download=False)
         
-        title = formattedYoutubeTitle(info.get('title', 'video'))
-        audioFilePath = os.path.join(mediaDownloadPath, f"{title}.%(ext)s")
+        formattedTitle = formattedYoutubeTitle(info.get('title', 'video'))
+        originalTitle = info.get('title', 'video')
+        ytTitleArray.append(originalTitle)
+        audioFilePath = os.path.join(mediaDownloadPath, f"{formattedTitle}.%(ext)s")
         
         ydlOptions = {
             'format': 'bestaudio/best',
@@ -121,6 +125,8 @@ def analyzeYoutubeAudioWithAI(transcriptionPath):
                 Aqui está o conteúdo transcrito do vídeo:
 
                 {transcriptionText}
+
+                E esse é o título do vídeo: {ytTitleArray[0]}.
                 """
             ]
         )
@@ -134,8 +140,10 @@ def analyzeYoutubeAudioWithAI(transcriptionPath):
             os.path.basename(videoResumeTitle).replace('.txt', '').replace('resume-', '')
         )
 
+        ytTitle = ytTitleArray[0]
+
         with open(f"{videoResumeTitle}.md", "w", encoding="utf-8") as f:
-            f.write(f"Resumo do vídeo: {cleanVideoTitle}\n\n")
+            f.write(f"Resumo do vídeo: {ytTitle}\n\n")
             f.write(response.text)
 
         print(f"Sucesso no resumo! Resumo salvo em: resumes/{os.path.basename(videoResumeTitle)}.md")

@@ -59,12 +59,12 @@ def fetchYoutubeAudio(url):
         
         finalPath = audioFilePath.replace('%(ext)s', 'm4a')
         
-        print("Download foi concluído com sucesso! Agora iniciando a transcrição do áudio...")
+        print("Download foi concluído com sucesso! \n Agora iniciando a transcrição do áudio...")
 
         transcribeAudioToText(finalPath)
 
     except Exception as e:
-        print(f"Erro! {e}")
+        print(f"Erro ao fazer o download do vídeo! {e}")
 
 def transcribeAudioToText(audioPath):
     try:
@@ -85,12 +85,12 @@ def transcribeAudioToText(audioPath):
         with open(f"{videoTranscriptionTitle}.txt", "w", encoding="utf-8") as f:
             f.write(response.text)
         
-        print(f"Transcrição salva em: transcriptions/{os.path.basename(videoTranscriptionTitle)}.txt! Agora iniciando a análise do áudio...")
+        print(f"Transcrição salva em: transcriptions/{os.path.basename(videoTranscriptionTitle)}.txt! \n Agora iniciando a análise do áudio...")
 
         analyzeYoutubeAudioWithAI(f"{videoTranscriptionTitle}.txt")
 
     except Exception as e:
-        print(f"Erro durante análise: {e}")
+        print(f"Erro durante transcrição: {e}")
 
 def analyzeYoutubeAudioWithAI(transcriptionPath):
     try:
@@ -135,10 +135,6 @@ def analyzeYoutubeAudioWithAI(transcriptionPath):
             f"resume-{os.path.basename(transcriptionPath).replace('.txt', '').replace('transcription-', '')}"
         )
         videoResumeTitle = os.path.join(resumesPath, videoResumeTitle)
-
-        cleanVideoTitle = formattedYoutubeTitle(
-            os.path.basename(videoResumeTitle).replace('.txt', '').replace('resume-', '')
-        )
 
         ytTitle = ytTitleArray[0]
 

@@ -131,7 +131,7 @@ def analyzeYoutubeAudioWithAI(transcriptionPath):
         videoResumeTitle = os.path.join(resumesPath, videoResumeTitle)
 
         cleanVideoTitle = formattedYoutubeTitle(
-            os.path.basename(transcriptionPath).replace('.txt', '').replace('resume-', '')
+            os.path.basename(videoResumeTitle).replace('.txt', '').replace('resume-', '')
         )
 
         with open(f"{videoResumeTitle}.md", "w", encoding="utf-8") as f:
@@ -151,5 +151,3 @@ def analyzeYoutubeAudioWithAI(transcriptionPath):
     
 url = input("Adicione a URL do vídeo: ").strip()
 fetchYoutubeAudio(url)
-
-# https://youtu.be/_BGzk0Yqumo?si=5QY7F-FbW0uvc25O

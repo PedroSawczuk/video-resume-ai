@@ -65,6 +65,9 @@ def fetchYoutubeAudio(url):
 
     except Exception as e:
         print(f"Erro ao fazer o download do vídeo! {e}")
+        transcriptionsPath = fetchTranscriptionsPath()
+        shutil.rmtree(mediaDownloadPath)
+        shutil.rmtree(transcriptionsPath)
 
 def transcribeAudioToText(audioPath):
     try:
@@ -89,8 +92,12 @@ def transcribeAudioToText(audioPath):
 
         analyzeYoutubeAudioWithAI(f"{videoTranscriptionTitle}.txt")
 
+        mediaDownloadPath = fetchMediaDownloadPath()
+
     except Exception as e:
         print(f"Erro durante transcrição: {e}")
+        shutil.rmtree(mediaDownloadPath)
+        shutil.rmtree(transcriptionsPath)
 
 def analyzeYoutubeAudioWithAI(transcriptionPath):
     try:
@@ -103,30 +110,59 @@ def analyzeYoutubeAudioWithAI(transcriptionPath):
             transcriptionText = file.read()
 
         response = client.models.generate_content(
-            model="gemini-2.0-flash",
+        model="gemini-2.0-flash",
             contents=[
                 f"""
-                Você é um analisador profissional de vídeos do YouTube. Quero que você faça o seguinte:
+                Atue como um analista narrativo e crítico de vídeos do YouTube. Você é especializado em extrair sentido, emoção e estrutura de vídeos longos, transformando transcrições em análises editoriais que expliquem o conteúdo a fundo, mesmo para quem nunca viu o vídeo.
 
-                1. Transcreva o áudio do vídeo de forma clara e organizada.
-                2. Identifique os pontos principais abordados, como temas, ideias e tópicos relevantes.
-                3. Resuma todo o conteúdo em um texto conciso, fácil de entender e direto ao ponto.
-                4. Destaque qualquer conclusão, recomendação ou chamada para ação presente no vídeo.
-                5. Evite jargões técnicos ou termos complexos, a menos que sejam essenciais para o entendimento.
-                6. Use uma linguagem simples e acessível, como se estivesse explicando para alguém que não conhece o assunto.
-                7. O resumo deve ser útil para qualquer pessoa que queira entender o conteúdo do vídeo sem precisar assisti-lo.
-                8. O resumo deve ser claro, objetivo e conter todas as informações relevantes.
-                9. O resumo deve ser escrito no idioma do áudio original.
-                10. O resumo deve ser organizado de forma lógica, seguindo a estrutura do vídeo.
-                11. O resumo deve conter os principais pontos discutidos no vídeo, sem perder o contexto.
+                Receberá abaixo:
+                - O título do vídeo
+                - A transcrição completa
                 
-                Resuma e organize as informações para que qualquer pessoa possa entender o conteúdo sem assistir ao vídeo.
+                Com base nisso, produza uma análise completa, profunda e bem escrita. Sua tarefa é ir além de um simples resumo. Você deve:
 
-                Aqui está o conteúdo transcrito do vídeo:
+                ### 🎬 Estrutura do texto final:
 
+                1. Apresentação e Contexto Inicial
+                - Apresente o vídeo com uma breve contextualização: quem é o criador, de onde vem o conteúdo, qual o objetivo aparente do vídeo e qual o público-alvo.
+                - Explique o tom inicial e a expectativa que o vídeo cria.
+
+                2. Resumo Narrativo Estruturado
+                - Faça um resumo cronológico, destacando todas as principais seções do vídeo com subtítulos, se necessário.
+                - Aprofunde em cada ideia discutida com riqueza de detalhes, inclusive trechos mais emocionais, reflexivos ou polêmicos.
+                - Destaque trechos de fala importantes, e interprete o que o autor está tentando comunicar (não apenas repita).
+
+                3. Análise de Tom e Emoções
+                - Analise o tom do vídeo ao longo do tempo (ex: melancólico, crítico, nostálgico, inspirador).
+                - Aponte momentos de virada emocional e como isso afeta o entendimento geral.
+                - Se for uma homenagem ou despedida, comente o peso emocional.
+
+                4. Subtextos e Intenções Não Ditas
+                - Aprofunde nas entrelinhas: o que o vídeo sugere sem dizer diretamente?
+                - Existe crítica implícita? Nostalgia? Arrependimento? Esperança?
+
+                5. Impacto no público e comunidade
+                - Como esse vídeo pode afetar a base de fãs, o público geral ou a comunidade retratada?
+                - Existe alguma mensagem implícita para pessoas próximas do autor, para a fanbase ou para si mesmo?
+
+                6. Encerramento e Reflexão Final
+                - Explique como o vídeo encerra e qual a mensagem principal deixada.
+                - Se houver chamada à ação, diga qual é e por que ela importa.
+                - Feche com uma interpretação crítica: qual o real sentido do vídeo? Por que ele foi feito? O que ele quer provocar?
+
+                ### 📌 Regras de escrita:
+                - Use uma linguagem envolvente, clara e madura.
+                - Não seja genérico. Escreva como quem realmente viu e refletiu sobre o vídeo.
+                - Evite linguagem robótica ou listas secas. Prefira parágrafos bem construídos e com fluidez.
+                - Escreva no idioma original do vídeo.
+                - NÃO invente informações. Baseie-se apenas no texto transcrito, mas interprete profundamente o que está presente ali.
+
+                Agora, com base nessas instruções, produza uma análise completa do vídeo abaixo:
+
+                Título do vídeo: {ytTitleArray[0]}
+
+                Transcrição completa:
                 {transcriptionText}
-
-                E esse é o título do vídeo: {ytTitleArray[0]}.
                 """
             ]
         )
@@ -152,6 +188,8 @@ def analyzeYoutubeAudioWithAI(transcriptionPath):
 
     except Exception as e:
         print(f"Erro durante resumo: {e}")
-    
+        shutil.rmtree(mediaDownloadPath)
+        shutil.rmtree(transcriptionsPath)
+
 url = input("Adicione a URL do vídeo: ").strip()
 fetchYoutubeAudio(url)
